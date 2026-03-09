@@ -30,8 +30,20 @@ class CopilotWindow(Window):
         self.Height = 580
 
         # Conversation history sent to OpenAI on every request
+        # Load real model context and inject into system prompt
+        from context import get_model_context
+        model_context = get_model_context()
+
         self.conversation = [
-            {"role": "system", "content": "You are an expert in Autodesk Revit and BIM modeling. Help users solve modeling problems, visibility issues, family parameters, view settings and general Revit workflows. Be clear, concise and practical."}
+            {"role": "system", "content": """You are an expert in Autodesk Revit and BIM modeling.
+Help users solve modeling problems, visibility issues, family parameters,
+view settings and general Revit workflows.
+Be clear, concise and practical. Always provide step-by-step solutions when relevant.
+
+You have access to the following real data from the active Revit model:
+{context}
+
+Use this data to give specific answers about the project.""".format(context=model_context)}
         ]
 
         self._build_ui()
@@ -164,7 +176,6 @@ class CopilotWindow(Window):
                 self.chat_panel.Children.Count - 1
             )
             self._add_message("AI", "Error: " + str(ex))
-
 
 # Create and display the window
 # ShowDialog blocks execution until the window is closed
